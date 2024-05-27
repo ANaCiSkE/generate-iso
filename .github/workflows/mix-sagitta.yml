@@ -1,0 +1,38 @@
+name: Build VYOS ISO Mix Sagitta
+
+on:
+  workflow_dispatch  
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set VyOS version
+      run: |
+        echo "VYOS_VERSION=1.4-rolling-$(date -u +%Y%m%d%H%M)" >> $GITHUB_ENV
+
+    - name: Pull vyos-build docker image
+      run: |
+        docker pull vyos/vyos-build:sagitta
+        
+    - name: Build iso
+      run: |
+        git clone -b sagitta --single-branch https://github.com/vyos/vyos-build
+        cd vyos-build
+        sed -i 's|http://dev.packages.vyos.net/repositories/sagitta|https://rolling-packages.vyos.net/current/|g' data/defaults.toml
+        sed -i 's|sagitta|current|g' data/defaults.toml
+        sed -i 's|6.1.58|6.6.31|g' data/defaults.toml
+        docker run --rm --privileged -v $(pwd):/vyos -w /vyos vyos/vyos-build:sagitta bash -c 'sudo ./build-vyos-image iso --architecture amd64 --build-type release --version "${{ env.VYOS_VERSION }}"'
+        cd ..
+
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.ACTION_TOKEN }}
+        file: vyos-build/build/vyos-${{ env.VYOS_VERSION }}-amd64.iso
+        tag: vyos-${{ env.VYOS_VERSION }}
+        overwrite: true
