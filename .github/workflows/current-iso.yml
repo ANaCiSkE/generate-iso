@@ -1,0 +1,35 @@
+name: Build vyos ISO Current Branch
+
+on:
+  workflow_dispatch  
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set VyOS Version
+      run: |
+        echo "VYOS_VERSION=current-$(date -u +%Y%m%d%H%M)" >> $GITHUB_ENV
+
+    - name: Pull vyos-build Docker Image
+      run: |
+        docker pull vyos/vyos-build:current
+        
+    - name: Build iso
+      run: |
+        git clone -b current --single-branch https://github.com/vyos/vyos-build
+        cd vyos-build
+        docker run --rm --privileged -v $(pwd):/vyos -w /vyos vyos/vyos-build:current bash -c 'sudo ./build-vyos-image iso --architecture amd64 --build-type release --version "${{ env.VYOS_VERSION }}"'
+        cd ..
+
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: vyos-build/build/vyos-${{ env.VYOS_VERSION }}-iso-amd64.iso
+        tag: vyos-${{ env.VYOS_VERSION }}
+        overwrite: true
