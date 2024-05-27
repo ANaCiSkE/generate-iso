@@ -33,6 +33,6 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: vyos-build/build/vyos-${{ env.VYOS_VERSION }}-amd64.iso
+        file: vyos-build/build/vyos-${{ env.VYOS_VERSION }}-iso-amd64.iso
         tag: vyos-${{ env.VYOS_VERSION }}
         overwrite: true
