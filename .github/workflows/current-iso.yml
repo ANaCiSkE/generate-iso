@@ -1,8 +1,10 @@
 name: Build vyos ISO Current Branch
 
 on:
-  workflow_dispatch  
-
+  workflow_dispatch:
+  schedule:
+    - cron: 0 0 * * 0
+    
 permissions:
   contents: write
 
@@ -23,13 +25,23 @@ jobs:
       run: |
         git clone -b current --single-branch https://github.com/vyos/vyos-build
         cd vyos-build
-        docker run --rm --privileged -v $(pwd):/vyos -w /vyos vyos/vyos-build:current bash -c 'sudo ./build-vyos-image iso --architecture amd64 --build-type release --version "${{ env.VYOS_VERSION }}"'
+        docker run --rm --privileged -v $(pwd):/vyos -w /vyos vyos/vyos-build:current bash -c 'sudo ./build-vyos-image generic --architecture amd64 --build-type release --version "${{ env.VYOS_VERSION }}"'
         cd ..
 
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: vyos-build/build/vyos-${{ env.VYOS_VERSION }}-iso-amd64.iso
+        file: vyos-build/build/vyos-${{ env.VYOS_VERSION }}-generic-amd64.iso
         tag: vyos-${{ env.VYOS_VERSION }}
         overwrite: true
+
+  delete_old_workflow_runs:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Delete old workflow runs
+        uses: GitRML/delete-workflow-runs@main
+        with:
+          retain_days: 360
