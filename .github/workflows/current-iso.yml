@@ -25,6 +25,7 @@ jobs:
       run: |
         git clone -b current --single-branch https://github.com/vyos/vyos-build
         cd vyos-build
+        echo "SHA_COMMIT=$(git log -1 --format=%H)" >> $GITHUB_ENV
         docker run --rm --privileged -v $(pwd):/vyos -w /vyos vyos/vyos-build:current bash -c 'sudo ./build-vyos-image generic --architecture amd64 --build-type release --version "${{ env.VYOS_VERSION }}"'
         cd ..
 
@@ -33,7 +34,7 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: vyos-build/build/vyos-${{ env.VYOS_VERSION }}-generic-amd64.iso
-        tag: vyos-${{ env.VYOS_VERSION }}
+        tag: vyos-${{ env.VYOS_VERSION }}-${{ env.SHA_COMMIT }}
         overwrite: true
 
   delete_old_workflow_runs:
