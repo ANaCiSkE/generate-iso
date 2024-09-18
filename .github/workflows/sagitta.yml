@@ -1,0 +1,35 @@
+name: Build novyos ISO sagitta
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: 0 0 * * 0
+    
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set VyOS Version
+      run: |
+        echo "VYOS_VERSION=current-$(date -u +%Y%m%d%H%M)" >> $GITHUB_ENV
+        echo "SHA_COMMIT=$(git ls-remote https://github.com/vyos/vyos-build refs/heads/sagitta | awk '{print $1}')" >> $GITHUB_ENV
+    
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Build iso
+      run: |
+        chmod +x build-sagitta.sh
+        ./build-sagitta.sh
+        echo "HASH=$(sha256sum vyos-1.4.x-iso-amd64.iso)" >> $GITHUB_ENV
+
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: vyos-1.4.x-iso-amd64.iso
+        tag: vyos-${{ env.VYOS_VERSION }}-${{ env.SHA_COMMIT }}-${{ env.HASH }}
+        overwrite: true
