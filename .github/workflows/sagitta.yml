@@ -25,11 +25,12 @@ jobs:
         chmod +x build-sagitta.sh
         ./build-sagitta.sh
         echo "HASH=$(sha256sum vyos-1.4.x-iso-amd64.iso)" >> $GITHUB_ENV
+        mv vyos-1.4.x-iso-amd64.iso vyos-1.4.x-iso-${{ HASH }}-amd64.iso
 
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: vyos-1.4.x-iso-amd64.iso
-        tag: vyos-${{ env.VYOS_VERSION }}-${{ env.SHA_COMMIT }}-${{ env.HASH }}
+        file: vyos-1.4.x-iso-${{ HASH }}-amd64.iso
+        tag: vyos-sagitta-${{ env.SHA_COMMIT }}
         overwrite: true
