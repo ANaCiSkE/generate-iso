@@ -28,21 +28,13 @@ jobs:
         echo "SHA_COMMIT=$(git log -1 --format=%H)" >> $GITHUB_ENV
         docker run --rm --privileged -v $(pwd):/vyos -w /vyos vyos/vyos-build:current bash -c 'sudo ./build-vyos-image generic --architecture amd64 --build-type release --version "${{ env.VYOS_VERSION }}"'
         cd ..
+        echo "HASH=$(sha256sum vyos-build/build/vyos-${{ env.VYOS_VERSION }}-generic-amd64.iso | awk '{print $1}')" >> $GITHUB_ENV
 
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: vyos-build/build/vyos-${{ env.VYOS_VERSION }}-generic-amd64.iso
-        tag: vyos-${{ env.VYOS_VERSION }}-${{ env.SHA_COMMIT }}
+        tag: vyos-${{ env.VYOS_VERSION }}-${{ env.SHA_COMMIT }}-${{ env.HASH }}
         overwrite: true
 
-  delete_old_workflow_runs:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Delete old workflow runs
-        uses: GitRML/delete-workflow-runs@main
-        with:
-          retain_days: 360
