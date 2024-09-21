@@ -4,7 +4,8 @@ set -e
 wget https://vyos.tnyzeq.icu/apt/apt.gpg.key -O /tmp/apt.gpg.key
 
 rm -rf vyos-build/
-git clone https://github.com/dd010101/vyos-build.git
+# git clone https://github.com/dd010101/vyos-build.git
+git clone https://github.com/vyos/vyos-build.git
 git -C vyos-build/ checkout sagitta
 
 version="1.4.x"
