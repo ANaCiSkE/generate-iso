@@ -15,7 +15,7 @@ docker run --rm --privileged --name="vyos-build" -v ./vyos-build/:/vyos -e GOSU_
         --architecture amd64 \
         --build-by "self@local.com" \
         --build-type release \
-        --debian-elts-mirror http://deb.freexian.com/extended-lts \
+        --debian-mirror http://deb.freexian.com/extended-lts \
         --version "$version" \
         --vyos-mirror "https://vyos.tnyzeq.icu/apt/equuleus" \
         --custom-apt-key /opt/apt.gpg.key \
