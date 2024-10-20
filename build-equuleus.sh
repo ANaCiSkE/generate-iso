@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -e
 
 wget https://vyos.tnyzeq.icu/apt/apt.gpg.key -O /tmp/apt.gpg.key
