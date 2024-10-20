@@ -1,0 +1,37 @@
+name: Build novyos ISO equuleus
+on:
+  workflow_dispatch:
+    
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set VyOS Version
+      run: |
+        echo "VYOS_VERSION=$(date -u +%Y%m%d%H%M)" >> $GITHUB_ENV
+        echo "SHA_COMMIT=$(git ls-remote https://github.com/vyos/vyos-build refs/heads/equuleus | awk '{print $1}')" >> $GITHUB_ENV
+    
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Build iso
+      run: |
+        chmod +x build-equuleus.sh
+        ./build-equuleus.sh
+        echo "HASH=$(sha256sum vyos-1.3.x-iso-amd64.iso | awk '{print $1}')" >> $GITHUB_ENV
+
+    - name: Rename iso
+      run: |
+        cp vyos-1.3.x-amd64.iso vyos-1.3.x-${{ env.VYOS_VERSION }}-amd64.iso
+
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: vyos-1.3.x-${{ env.VYOS_VERSION }}-amd64.iso
+        tag: vyos-equuleus-${{ env.VYOS_VERSION }}-${{ env.SHA_COMMIT }}-${{ env.HASH }}
+        overwrite: true
