@@ -23,7 +23,7 @@ jobs:
         
     - name: Build iso
       run: |
-        git clone -b current --single-branch https://github.com/vyos/vyos-build
+        git clone -b rolling --single-branch https://github.com/vyos/vyos-build
         cd vyos-build
         echo "SHA_COMMIT=$(git log -1 --format=%H)" >> $GITHUB_ENV
         docker run --rm --privileged -v $(pwd):/vyos -w /vyos vyos/vyos-build:current bash -c 'sudo ./build-vyos-image generic --architecture amd64 --build-type release --version "${{ env.VYOS_VERSION }}"'
